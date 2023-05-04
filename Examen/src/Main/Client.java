@@ -2,10 +2,7 @@ package Main;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.Socket;
-
-import ti208.log.Log;
 import ti208.log.LogGenerator;
 
 public class Client {
