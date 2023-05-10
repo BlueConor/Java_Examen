@@ -34,25 +34,20 @@ public class server {
 			String resultCommand = "Select * FROM log";
 			ResultSet result = st.executeQuery(resultCommand);
 			
-			while(result.next()) {
-				int id = result.getInt("id");
-				String timeOutput = result.getString("time");
-				String textOutput = result.getString("text");
-				String levelOutput = result.getString("level");
+			int id = result.getInt("id");
+			String timeOutput = result.getString("time");
+			String textOutput = result.getString("text");
+			String levelOutput = result.getString("level");
 				
-				String output = "| id: " + id + " | time: " + timeOutput + " | text: " + textOutput + " | level: " + levelOutput + " |";
-				//affichage du log dans le terminal
-				System.out.println(output);
+			String output = "| id: " + id + " | time: " + timeOutput + " | text: " + textOutput + " | level: " + levelOutput + " |";
+			//affichage du log dans le terminal
+			System.out.println(output);
 				
-				//écriture du log dans le fichier texte
-				FileWriter fw = new FileWriter("BD.txt", true);
-				fw.write("\n" + output);
-				fw.close();
-				
-				
-				}
-			
-			}
+			//écriture du log dans le fichier texte
+			FileWriter fw = new FileWriter("BD.txt", true);
+			fw.write("\n" + output);
+			fw.close();
+		}
 		
 		catch(SQLException e) {
 			// Handle connection error
