@@ -19,10 +19,11 @@ public class Server {
 			
 			input = new ObjectInputStream(connection.getInputStream());
 			
-			while(true) {
-				String id = (String) input.readObject();
+			for(int i = 0; i < 5; i++){
 				Log message = (Log) input.readObject();
-				System.out.println(id + message);
+				String id = (String) input.readObject();
+				System.out.println("'Le client' " + id + " a envoyé le log suivant :\n" + message);
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
