@@ -8,22 +8,36 @@ import ti208.log.*;
 public class Server {
 	public static void main(String[] args) {
 		
-		ServerSocket server;
-		Socket connection;
-		ObjectInputStream input;
-		
-		
 		try {
-			server = new ServerSocket(5678);
-			connection = server.accept();
 			
-			input = new ObjectInputStream(connection.getInputStream());
+			//Création du serveur et de l'attente de connection cliente
+			ServerSocket server = new ServerSocket(5678);
+			Socket connection = server.accept();
 			
-			while(true) {
-				String id = (String) input.readObject();
+			ObjectInputStream input = new ObjectInputStream(connection.getInputStream());
+			
+			//Boucle pour récuperer les logs et l'identifiant du client, ainsi que les afficher
+			for(int i = 0; i < 5; i++){
 				Log message = (Log) input.readObject();
-				System.out.println(id + message);
+				String id = (String) input.readObject();
+				System.out.println("'Le client' " + id + " a envoyé le log suivant :\n" + message);
+				
 			}
+			
+			try {
+				if(server != null) {
+					server.close();
+				} 
+				if(connection != null) {
+					connection.close();
+				}
+				if(input != null) {
+					input.close();
+				}
+			} catch (Exception e) {
+				System.out.println("Une erreur s'est produite lors de la fermeture des systèmes de communications avec le client.");
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
