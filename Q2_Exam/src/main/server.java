@@ -5,65 +5,94 @@ import java.io.IOException;
 import java.sql.*;
 import java.time.*;
 import ti208.log.*;
+import java.io.ObjectInputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class server {
 //utilisation de PrepareStatement pour les injections SQL sujettes à répétition (protège aussi des attaques SQL mais ne nous concernent pas)
 
 	public static void main(String args[]) throws IOException {
 
-		String insert = "INSERT INTO log (id, time, text, level) VALUES (2, ?, ?, ?)";
+		String insertCommand = "INSERT INTO log (id, time, text, level, customer_id) VALUES (2, ?, ?, ?, ?)";
 		
-		try(Connection conn = DriverManager.getConnection("jdbc:sqlite:sample.db"); 
+		try(Connection conn = DriverManager.getConnection("jdbc:sqlite:sample.db");
 			Statement st = conn.createStatement();
-			PreparedStatement ps = conn.prepareStatement(insert))
-		
-		{
-			// Use connection
+			PreparedStatement insertInput = conn.prepareStatement(insertCommand)){
+			
+			
+			//Création du serveur et de l'attente de connection cliente
+			ServerSocket server = new ServerSocket(5678);
+			Socket connection = server.accept();
+			
+			ObjectInputStream input = new ObjectInputStream(connection.getInputStream());
+			
+			//Vérification de la connection
 			System.out.println("Connexion réussie !");
 			
 			//Reset de la base de données
 			st.execute("DROP TABLE log");
 			st.execute("CREATE TABLE log (id int, time varchar(200) , customer_id varchar(100), text varchar (200), level varchar(10))");
+		
 			
-			//Insertion d'une nouvelle ligne
-			Log log = LogGenerator.readLog();
-			LocalDateTime timeInput = log.getDatetime();
-			LogLevel levelInput = log.getLevel();
-			String textInput = log.getText();
-			//String insertCommand = "INSERT INTO log (id, time, text, level) VALUES (2, '" + timeInput + "', '" + textInput + "', '" + levelInput + "')";
-			
-			//Démarche via un Prepared Statement pour régler le problème de lecture
-			ps.setString(1, timeInput.toString());
-			ps.setString(2, textInput);
-			ps.setString(3, levelInput.toString());
-			ps.executeUpdate();
-			
+			for(int i = 0; i < 5; i++){
+				Log log = (Log) input.readObject();
+				//Insertion d'une nouvelle ligne
+				LocalDateTime timeInput = log.getDatetime();
+				LogLevel levelInput = log.getLevel();
+				String textInput = log.getText();			
+				//Démarche via un Prepared Statement pour régler le problème de lecture
+				insertInput.setString(1, timeInput.toString());
+				insertInput.setString(2, textInput);
+				insertInput.setString(3, levelInput.toString());
+				String customer_id = (String) input.readObject();
+				insertInput.setString(4, customer_id);
+				insertInput.executeUpdate();
+				
+			}
+				
 			//Récupération de données
 			String resultCommand = "Select * FROM log";
 			ResultSet result = st.executeQuery(resultCommand);
 			
-			int id = result.getInt("id");
-			String timeOutput = result.getString("time");
-			String textOutput = result.getString("text");
-			String levelOutput = result.getString("level");
-				
-			String output = "| id: " + id + " | time: " + timeOutput + " | text: " + textOutput + " | level: " + levelOutput + " |";
+			while(result.next()) {
 			
-			//affichage du log dans le terminal
-			System.out.println(output);
+				int id = result.getInt("id");
+				String timeOutput = result.getString("time");
+				String textOutput = result.getString("text");
+				String levelOutput = result.getString("level");
+				String customer_idOutput = result.getString("customer_id");
 				
-			//écriture du log dans le fichier texte
-			FileWriter fw = new FileWriter("BD.txt", true);
-			fw.write("\n" + output);
-			fw.close();
+				String output = "| id: " + id + " | time: " + timeOutput + " | text: " + textOutput + " | level: " + levelOutput + " | customer_id: " + customer_idOutput + " |";
 			
-			st.close();
-			conn.close();
-		}
-		
-		catch(SQLException e) {
-			//retour d'erreurs
-			e.printStackTrace();
+				//affichage du log dans le terminal
+				System.out.println(output);
+			
+				//écriture du log dans le fichier texte
+				FileWriter fw = new FileWriter("BD.txt", true);
+				fw.write("\n" + output);
+				fw.close();
 			}
+
+			
+		
+			
+		try {
+			if(server != null) {
+				server.close();
+			} 
+			if(connection != null) {
+				connection.close();
+			}
+			if(input != null) {
+					input.close();
+				}
+			} catch (Exception e) {
+				System.out.println("Une erreur s'est produite lors de la fermeture des systèmes de communications avec le client.");
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
