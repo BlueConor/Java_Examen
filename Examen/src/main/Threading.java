@@ -42,7 +42,6 @@ public class Threading extends Thread {
 				}
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
 		}
 	}
 }
