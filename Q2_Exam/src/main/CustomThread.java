@@ -36,8 +36,8 @@ public class CustomThread extends Thread {
 					insertLog.setString(5, log.getLevel().toString());
 					
 					//Vérifications de création
-					//System.out.println("");
-					//System.out.println("| id: " + logId + " | time: " + log.getDatetime().toString() + " | text: " + log.getText() + " | level: " + log.getLevel().toString() + " | customer_id: " + customerId + " |");
+					System.out.println("");
+					System.out.println("| id: " + logId + " | time: " + log.getDatetime().toString() + " | text: " + log.getText() + " | level: " + log.getLevel().toString() + " | customer_id: " + customerId + " |");
 					
 					insertLog.executeUpdate();
 					

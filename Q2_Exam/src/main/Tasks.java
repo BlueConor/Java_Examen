@@ -29,7 +29,7 @@ public class Tasks {
 				insertCommand = conn.prepareStatement("SELECT * FROM log WHERE SeverityLevel IN ((?), (?), (?))");}
 			
 			else {
-				insertCommand = conn.prepareStatement("SELECT * FROM log WHERE SeverityLevel IN ((?), (?), (?)) and CustomerId = (?) ");
+				insertCommand = conn.prepareStatement("SELECT * FROM log WHERE SeverityLevel IN ((?), (?), (?)) AND CustomerId = (?) ");
 				insertCommand.setString(4, customerId);}
 			
 			if(severityLevel.equals("WARNING")) {
@@ -80,39 +80,30 @@ public class Tasks {
 		
 		System.out.println("Entrez l'ID du client souhaité (pour tous les supprimer, entrez 'all') : ");
 		String customerId = scanner.next();
-		System.out.println("Entrez le niveau de sévérité minimum (Pour tous les supprimer, entrez 'all') : ");
-		String severityLevel = scanner.next();
+		System.out.println("Entrez la date maiximale (Pour ne pas prendre en compte, entrez 'all') : ");
+		String date = scanner.next();
 		
 		try(Connection conn = DriverManager.getConnection("jdbc:sqlite:sample.db")){
 			PreparedStatement insertCommand;
-
-			//Vérifie d'abord la valeur de customerId (doit être en dernière position dans la commande de sélection pour ne pas laisser un vide
-			if(customerId.equals("all")) {
-				insertCommand = conn.prepareStatement("DELETE FROM log WHERE SeverityLevel IN ((?), (?), (?))");}
 			
-			else {
-				insertCommand = conn.prepareStatement("DELETE FROM log WHERE SeverityLevel IN ((?), (?), (?)) and CustomerId = (?) ");
-				insertCommand.setString(4, customerId);}
+			//Vérifie d'abord la valeur de customerId (doit être en dernière position dans la commande de sélection pour ne pas laisser un vide)
+			if(customerId.equals("all") && date.equals("all")) {
+				insertCommand = conn.prepareStatement("DELETE FROM log");
+			}
 			
-			if(severityLevel.equals("WARNING")) {
-				insertCommand.setString(1, "WARNING");
-				insertCommand.setString(2, "WARNING");
-				insertCommand.setString(3, "WARNING");
+			else if(customerId.equals("all")) {
+				insertCommand = conn.prepareStatement("DELETE FROM log WHERE(SELECT substr(DateTime, 1, instr(DateTime, 'T') - 1) AS Date FROM log WHERE Date <= (?))");
+				insertCommand.setString(1, date);
 				
-			} else if(severityLevel.equals("ERROR")) {
-				insertCommand.setString(1, "WARNING");
-				insertCommand.setString(2, "ERROR");
-				insertCommand.setString(3, "ERROR");
-			} else {
-				insertCommand.setString(1, "INFO");
-				insertCommand.setString(2, "ERROR");
-				insertCommand.setString(3, "WARNING");
 			}
 
-			
+			else {
+				insertCommand = conn.prepareStatement("DELETE FROM log WHERE(SELECT substr(DateTime, 1, instr(DateTime, 'T') - 1) AS Date FROM log WHERE Date <= (?)) AND CustomerId = (?)");
+				insertCommand.setString(1, date);
+				insertCommand.setString(2, customerId);
+			}
 			int DeleteCount = insertCommand.executeUpdate();
 			System.out.println(DeleteCount + " données supprimées");
-			
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
