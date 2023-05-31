@@ -69,7 +69,7 @@ public class Tasks {
 			}
 			
 		} catch (SQLException e) {
-			System.out.println("Une erreur est survenue, vérifiez vos données et réessayer");
+			System.out.println("Une erreur est survenue, vérifiez vos données et réessayez");
 		}
 	}
 	
@@ -80,7 +80,7 @@ public class Tasks {
 		
 		System.out.println("Entrez l'ID du client souhaité (pour tous les supprimer, entrez 'all') : ");
 		String customerId = scanner.next();
-		System.out.println("Entrez la date maiximale (Pour ne pas prendre en compte, entrez 'all') : ");
+		System.out.println("Entrez la date maximale sous format AAAA-MM-JJ (Pour ne pas prendre en compte, entrez 'all') : ");
 		String date = scanner.next();
 		
 		try(Connection conn = DriverManager.getConnection("jdbc:sqlite:sample.db")){
